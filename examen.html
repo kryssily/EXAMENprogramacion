@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Papelería Escolar - Cobro de Copias</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #eef2f7;
+    margin: 0;
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+  }
+  .contenedor {
+    background: #fff;
+    width: 100%;
+    max-width: 480px;
+    padding: 28px;
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.12);
+  }
+  h1 {
+    font-size: 20px;
+    text-align: center;
+    margin: 0 0 4px;
+    color: #1f3a5f;
+  }
+  .sub {
+    text-align: center;
+    font-size: 13px;
+    color: #6b7c93;
+    margin-bottom: 22px;
+  }
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #33475b;
+    margin: 14px 0 6px;
+  }
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 15px;
+    border: 1px solid #c9d4e0;
+    border-radius: 8px;
+    outline: none;
+  }
+  input[type="number"]:focus { border-color: #2f80ed; }
+  .fila {
+    display: flex;
+    gap: 12px;
+  }
+  .fila > div { flex: 1; }
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    font-size: 14px;
+    color: #33475b;
+  }
+  .check input { width: 18px; height: 18px; }
+  button {
+    width: 100%;
+    margin-top: 22px;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    background: #2f80ed;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  button:hover { background: #1c6fd8; }
+  .resultado {
+    margin-top: 20px;
+    padding: 16px;
+    background: #f4f8ff;
+    border-left: 4px solid #2f80ed;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.7;
+    display: none;
+  }
+  .resultado.visible { display: block; }
+  .total {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f3a5f;
+    margin-top: 8px;
+  }
+  .error {
+    color: #c0392b;
+    font-size: 14px;
+    margin-top: 12px;
+    display: none;
+  }
+  .error.visible { display: block; }
+</style>
+</head>
+<body>
+
+<div class="contenedor">
+  <h1>Papelería Escolar</h1>
+  <p class="sub">Calculadora de cobro de copias</p>
+  <center> 
+<img src="images (1).jfif"
+</center>
+
+  <div class="fila">
+    <div>
+      <label for="color">Copias a color</label>
+      <input type="number" id="color" min="0" value="0">
+    </div>
+    <div>
+      <label for="bn">Copias B/N</label>
+      <input type="number" id="bn" min="0" value="0">
+    </div>
+  </div>
+
+  <div class="check">
+    <input type="checkbox" id="credencial">
+    <label for="credencial" style="margin:0;font-weight:400;">
+      ¿Presenta credencial de alumno? (25% de descuento)
+    </label>
+  </div>
+
+  <button onclick="calcular()">Calcular total</button>
+  
+
+  <p class="error" id="error"></p>
+
+  <div class="resultado" id="resultado"></div>
+</div>
+
+<script>
+function precioColor(n) {
+  if (n <= 0) return 0;
+  if (n <= 50) return 1.50;
+  if (n <= 100) return 1.00;
+  return 0.80;
+}
+
+function precioBlancoNegro(n) {
+  if (n <= 0) return 0;
+  if (n <= 30) return 1.00;
+  return 0.60;
+}
+
+function calcular() {
+  const color = parseInt(document.getElementById("color").value) || 0;
+  const bn = parseInt(document.getElementById("bn").value) || 0;
+  const credencial = document.getElementById("credencial").checked;
+
+  const error = document.getElementById("error");
+  const resultado = document.getElementById("resultado");
+
+  error.classList.remove("visible");
+  resultado.classList.remove("visible");
+
+  if (color < 0 || bn < 0) {
+    error.textContent = "Las cantidades no pueden ser negativas.";
+    error.classList.add("visible");
+    return;
+  }
+
+  if (color === 0 && bn === 0) {
+    error.textContent = "Ingresa al menos una copia a color o en blanco y negro.";
+    error.classList.add("visible");
+    return;
+  }
+
+  const pColor = precioColor(color);
+  const pBn = precioBlancoNegro(bn);
+
+  const subtotalColor = color * pColor;
+  const subtotalBn = bn * pBn;
+  let subtotal = subtotalColor + subtotalBn;
+
+  let descuento = 0;
+  if (credencial) {
+    descuento = subtotal * 0.25;
+  }
+
+  const total = subtotal - descuento;
+
+  let html = "";
+
+  if (color > 0) {
+    html += "Copias a color: " + color + " × $" + pColor.toFixed(2) +
+            " = $" + subtotalColor.toFixed(2) + "<br>";
+  }
+  if (bn > 0) {
+    html += "Copias B/N: " + bn + " × $" + pBn.toFixed(2) +
+            " = $" + subtotalBn.toFixed(2) + "<br>";
+  }
+
+  html += "Subtotal: $" + subtotal.toFixed(2) + "<br>";
+
+  if (credencial) {
+    html += "Descuento alumno (25%): -$" + descuento.toFixed(2) + "<br>";
+  }
+
+  html += '<div class="total">Total a pagar: $' + total.toFixed(2) + "</div>";
+
+  resultado.innerHTML = html;
+  resultado.classList.add("visible");
+}
+</script>
+
+</body>
+</html>
